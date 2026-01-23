@@ -1,12 +1,17 @@
-package com.upb.agripos.service;
+package com.upb.agripos;
 
-import com.upb.agripos.model.Cart;
-import com.upb.agripos.model.CartItem;
-import com.upb.agripos.model.Product;
-import com.upb.agripos.exception.ValidationException;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+
+import com.upb.agripos.exception.ValidationException;
+import com.upb.agripos.model.CartItem;
+import com.upb.agripos.model.Product;
+import com.upb.agripos.service.CartService;
 
 public class CartServiceTest {
     private CartService cartService;
@@ -24,7 +29,7 @@ public class CartServiceTest {
     public void testAddToCart() throws Exception {
         cartService.addToCart(product1, 2);
         assertEquals(1, cartService.getCartItemCount());
-        assertEquals(100000, cartService.getCartTotal());
+        assertEquals(100000.0, cartService.getCartTotal(), 0.001);
     }
 
     @Test
@@ -32,7 +37,7 @@ public class CartServiceTest {
         cartService.addToCart(product1, 1);
         cartService.addToCart(product2, 2);
         assertEquals(2, cartService.getCartItemCount());
-        assertEquals(200000, cartService.getCartTotal());
+        assertEquals(200000.0, cartService.getCartTotal(), 0.001);
     }
 
     @Test
@@ -57,7 +62,7 @@ public class CartServiceTest {
     public void testUpdateCartQuantity() throws Exception {
         cartService.addToCart(product1, 1);
         cartService.updateCartItemQuantity("P001", 3);
-        assertEquals(150000, cartService.getCartTotal());
+        assertEquals(150000.0, cartService.getCartTotal(), 0.001);
     }
 
     @Test
@@ -77,6 +82,41 @@ public class CartServiceTest {
     public void testGetCartTotal() throws Exception {
         cartService.addToCart(product1, 2);
         cartService.addToCart(product2, 1);
-        assertEquals(175000, cartService.getCartTotal());
+        assertEquals(175000.0, cartService.getCartTotal(), 0.001);
+    }
+
+    // Additional tests
+
+    @Test
+    public void testAddSameProductIncreasesQuantity() throws Exception {
+        cartService.addToCart(product1, 1);
+        cartService.addToCart(product1, 2);
+        // still one cart item, total = 3 * 50000
+        assertEquals(1, cartService.getCartItemCount());
+        assertEquals(150000.0, cartService.getCartTotal(), 0.001);
+    }
+
+    @Test
+    public void testRemoveFromCartInvalidCodeThrows() {
+        assertThrows(ValidationException.class, () -> cartService.removeFromCart(null));
+        assertThrows(ValidationException.class, () -> cartService.removeFromCart("  "));
+    }
+
+    @Test
+    public void testUpdateCartQuantityInvalidCodeThrows() {
+        assertThrows(ValidationException.class, () -> cartService.updateCartItemQuantity(null, 1));
+        assertThrows(ValidationException.class, () -> cartService.updateCartItemQuantity("", 1));
+    }
+
+    @Test
+    public void testGetCartItemsContents() throws Exception {
+        cartService.addToCart(product1, 2);
+        cartService.addToCart(product2, 1);
+        List<CartItem> items = cartService.getCartItems();
+        assertEquals(2, items.size());
+        // verify product codes present
+        boolean hasP001 = items.stream().anyMatch(i -> i.getProduct().getCode().equals("P001"));
+        boolean hasP002 = items.stream().anyMatch(i -> i.getProduct().getCode().equals("P002"));
+        assertTrue(hasP001 && hasP002);
     }
 }
