@@ -1,200 +1,207 @@
-# Proyek Kelompok (Desain Sistem + Implementasi Terintegrasi + Testing + Dokumentasi) 
+# Laporan Proyek Kelompok - Agri-POS
+**Topik:** Desain & Implementasi Sistem Point-of-Sale untuk Produk Pertanian
 
-# 1. Identitas kelompok
+---
+
+## 1. Identitas Kelompok
 
 | Nama | NIM | Peran |
 |--- | --- | --- |
 | As Syifa Dian Rinesti | 240320559 | Manajemen Produk |
-| Azizzah Nurul Putri | 240320560 | Exception |
-| Azzahra Ramadhani | 240320561 | Login dan Hak Akses |
+| Azizzah Nurul Putri | 240320560 | Exception & Validasi |
+| Azzahra Ramadhani | 240320561 | Login & Hak Akses |
 | Bunga Maura Aulya | 240320562 | Metode Pembayaran |
-| Difa Rizkiana Fauziyah | 240320564 | Transaksi Penjualan |
-| Rossa Aqila Zahra | 240320568 | Struk dan Laporan |
+| Difa Rizkiana Fauziyah | 240320564 | Transaksi & Kasir |
+| Rossa Aqila Zahra | 240320568 | Struk, Laporan & Dokumentasi |
 
 ---
 
 ## 2. Ringkasan Sistem
 
-Agri-POS adalah aplikasi *Point of Sale* sederhana berbasis Java yang ditujukan untuk membantu proses penjualan produk pertanian. Sistem ini mendukung manajemen produk, transaksi penjualan, metode pembayaran yang extensible, laporan penjualan, serta pengelolaan hak akses pengguna (Admin dan Kasir).
+Agri-POS adalah aplikasi Point-of-Sale desktop (JavaFX) untuk toko produk pertanian.
+Tujuan: memfasilitasi kasir dan admin dalam melakukan penjualan, mengelola produk, dan menghasilkan laporan.
 
-**Scope sistem:**
+Fitur utama (implemented):
+- FR-1: Manajemen Produk (CRUD)
+- FR-2: Transaksi Penjualan dengan keranjang (Cart)
+- FR-3: Metode Pembayaran (Cash, E-Wallet) — extensible via Strategy Pattern
+- FR-4: Struk & Laporan Penjualan (ReceiptService)
+- FR-5: Login & Role-Based Access (Admin, Cashier)
 
-* Manajemen produk (CRUD)
-* Transaksi penjualan dan keranjang
-* Pembayaran tunai dan e-wallet
-* Struk transaksi dan laporan penjualan
-* Login dan pembatasan hak akses
-
-**Batasan sistem:**
-
-* Sistem bersifat desktop (JavaFX)
-* Database menggunakan PostgreSQL
-* Tidak terhubung ke payment gateway nyata (mock)
+Integrasi teknis: Java 17+ / JavaFX, Maven, PostgreSQL, JDBC, JUnit untuk unit test.
 
 ---
 
 ## 3. Desain Sistem
 
-### 3.1 Daftar Kebutuhan Sistem
+Arsitektur lapisan:
+- View (JavaFX) — `view` package
+- Controller — `controller` package
+- Service / Business Logic — `service` package
+- DAO / Persistence — `dao` package (interface + `Jdbc*` implementations)
+- Model — `model` package
 
-#### Functional Requirements (FR)
+Design decisions:
+- DAO pattern untuk akses DB dan kemudahan mocking/testing
+- Strategy pattern untuk metode pembayaran (mempermudah penambahan metode baru)
+- Single Responsibility pada tiap service class
 
-* **FR-1 Manajemen Produk**: Admin dapat menambah, mengubah, menghapus, dan melihat daftar produk.
-* **FR-2 Transaksi Penjualan**: Kasir dapat membuat transaksi, mengelola keranjang, dan menghitung total belanja.
-* **FR-3 Metode Pembayaran**: Sistem mendukung pembayaran Tunai dan E-Wallet dengan pendekatan Strategy.
-* **FR-4 Struk & Laporan**: Sistem menampilkan struk transaksi dan laporan penjualan.
-* **FR-5 Login & Hak Akses**: Sistem menyediakan login dengan peran Admin dan Kasir.
-
-#### Non-Functional Requirements
-
-* Aplikasi mudah digunakan (UI sederhana)
-* Arsitektur berlapis dan mudah dikembangkan
-* Data persisten dan aman menggunakan DB
-
-### 3.2 Arsitektur Sistem
-
-Sistem menggunakan arsitektur berlapis sesuai prinsip SOLID dan DIP:
-
-```
-View (JavaFX)
-   ↓
-Controller
-   ↓
-Service (Business Logic)
-   ↓
-DAO (JDBC)
-   ↓
-PostgreSQL Database
-```
-
-Tidak ada akses database langsung dari layer View.
 
 ---
 
-## 4. UML Diagram
+## 4. UML & Diagram
+1. Use Case
 
-### 4.1 Use Case Diagram
+![Screenshot hasil](/praktikum/week15-proyek-kelompok/screenshots/use%20case.png)
 
-Aktor utama:
+2. Activity Diagram
 
-* **Admin**: login, kelola produk, lihat laporan
-* **Kasir**: login, transaksi penjualan, checkout
+![Screenshot hasil](/praktikum/week15-proyek-kelompok/screenshots/activity%20diagram.png)
 
-(Use Case Diagram dilampirkan pada folder screenshots/docs)
+3. Class diagram
 
-### 4.2 Class Diagram
+![Screenshot hasil](/praktikum/week15-proyek-kelompok/screenshots/class%20diagram.png)
 
-Class utama:
+4. Sequence diagram (Checkout flow)
 
-* `Product`, `User`, `Transaction`, `TransactionItem`
-* `ProductService`, `TransactionService`, `AuthService`
-* `ProductDAO`, `TransactionDAO`, `UserDAO`
-* `PaymentMethod` (interface)
+![Screenshot hasil](/praktikum/week15-proyek-kelompok/screenshots/sequence%20diagram.png)
 
-  * `CashPayment`
-  * `EWalletPayment`
+5. Sequence diagram (Manajemen Produk)
 
-### 4.3 Sequence Diagram
+![Screenshot hasil](/praktikum/week15-proyek-kelompok/screenshots/sequence%20manajemen%20produk.png)
 
-* **SD-1 Tambah Produk**: Admin → ProductController → ProductService → ProductDAO → DB
-* **SD-2 Checkout Transaksi**: Kasir → TransactionController → TransactionService → PaymentMethod → DAO → DB
+6. ERD
+
+![Screenshot hasil](/praktikum/week15-proyek-kelompok/screenshots/ERD%20Agri-POS.drawio.png)
+
 
 ---
 
-## 5. Desain Database
+## 5. Database (DDL excerpt)
 
-### 5.1 ERD Sederhana
-
-Tabel utama:
-
-* `users (id, username, password, role)`
-* `products (id, kode, nama, kategori, harga, stok)`
-* `transactions (id, tanggal, total, payment_method)`
-* `transaction_items (id, transaction_id, product_id, qty, subtotal)`
-
-### 5.2 DDL (Contoh)
+Database lengkap ada di `sql/schema.sql`. Berikut cuplikan DDL utama:
 
 ```sql
+-- users
+CREATE TABLE users (
+	id SERIAL PRIMARY KEY,
+	username VARCHAR(50) UNIQUE NOT NULL,
+	password_hash VARCHAR(255) NOT NULL,
+	role VARCHAR(20) NOT NULL -- 'ADMIN' | 'CASHIER'
+);
+
+-- products
 CREATE TABLE products (
-  id SERIAL PRIMARY KEY,
-  kode VARCHAR(20),
-  nama VARCHAR(100),
-  kategori VARCHAR(50),
-  harga NUMERIC,
-  stok INT
+	id SERIAL PRIMARY KEY,
+	name VARCHAR(100) NOT NULL,
+	price NUMERIC(12,2) NOT NULL,
+	stock INT NOT NULL
+);
+
+-- transactions
+CREATE TABLE transactions (
+	id SERIAL PRIMARY KEY,
+	user_id INT REFERENCES users(id),
+	total NUMERIC(12,2) NOT NULL,
+	payment_method VARCHAR(50),
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- transaction_items
+CREATE TABLE transaction_items (
+	id SERIAL PRIMARY KEY,
+	transaction_id INT REFERENCES transactions(id),
+	product_id INT REFERENCES products(id),
+	quantity INT NOT NULL,
+	subtotal NUMERIC(12,2) NOT NULL
 );
 ```
 
-### 5.3 Akses Data
-
-Akses database dilakukan melalui DAO menggunakan JDBC dan `PreparedStatement`.
 
 ---
 
-## 6. Test Plan & Test Case
+## 6. Testing
 
-### 6.1 Test Plan
+6.1 Unit tests
+- Lokasi: `test/java/com/upb/agripos` (contoh: `CartServiceTest`)
+- Hasil 
+![Screenshot hasil](/praktikum/week15-proyek-kelompok/screenshots/Junit.png)
 
-Strategi pengujian:
+6.2 Manual test cases (minimal 8)
 
-* Manual testing untuk alur utama (UI)
-* Unit testing (JUnit) untuk logika Service
+1) Login sukses (Kasir)
+- Steps: buka aplikasi → masukkan username/password kasir valid → login
+- Expected: Masuk ke tampilan kasir
 
-### 6.2 Contoh Test Case Manual
+2) Login gagal (invalid credentials)
+- Steps: masukkan username/password salah
+- Expected: Notifikasi error, tidak boleh login
 
-| TC ID | Deskripsi           | Prekondisi          | Langkah                  | Expected Result          |
-| ----- | ------------------- | ------------------- | ------------------------ | ------------------------ |
-| TC-01 | Login Admin         | User admin tersedia | Login dengan akun admin  | Masuk ke dashboard admin |
-| TC-02 | Tambah Produk       | Login admin         | Isi form produk → Simpan | Produk tampil di tabel   |
-| TC-03 | Ubah Produk         | Produk ada          | Edit data produk         | Data terupdate           |
-| TC-04 | Hapus Produk        | Produk ada          | Klik hapus               | Produk terhapus          |
-| TC-05 | Tambah ke Keranjang | Login kasir         | Pilih produk + qty       | Item masuk keranjang     |
-| TC-06 | Hitung Total        | Keranjang terisi    | Lihat total              | Total sesuai             |
-| TC-07 | Checkout Tunai      | Keranjang terisi    | Pilih Tunai → Bayar      | Transaksi sukses         |
-| TC-08 | Lihat Laporan       | Login admin         | Buka laporan             | Data laporan tampil      |
+3) CRUD Produk (Tambah Produk)
+- Steps: login sebagai admin → buka manajemen produk → tambah produk baru
+- Expected: Produk tersimpan, muncul di daftar
 
-### 6.3 Unit Test (JUnit)
+4) CRUD Produk (Edit Produk)
+- Steps: pilih produk → ubah harga/stock → simpan
+- Expected: Perubahan tersimpan
 
-Unit test dilakukan pada `CartService` untuk memastikan perhitungan total berjalan benar.
-(Screenshot hasil JUnit terlampir)
+5) Tambah item ke keranjang
+- Steps: pilih produk → tambahkan qty ke cart
+- Expected: Item muncul di cart dengan subtotal benar
+
+6) Transaksi checkout tunai
+- Steps: checkout pilih Cash → masukkan jumlah tunai → konfirmasi
+- Expected: Transaksi tersimpan, struk muncul, stok berkurang
+
+7) Transaksi checkout e-wallet
+- Steps: checkout pilih E-Wallet → proses (simulasi) sukses
+- Expected: Transaksi tersimpan, struk muncul
+
+8) Validasi stok (OutOfStockException)
+- Steps: masukkan qty lebih besar dari stock → checkout
+- Expected: Muncul error `OutOfStockException`, transaksi dibatalkan
+
+
+6.3 Evidence yang disertakan
+- Unit test report: [target/surefire-reports/com.upb.agripos.CartServiceTest.txt](target/surefire-reports/com.upb.agripos.CartServiceTest.txt)
+
 
 ---
 
-## 7. Traceability Matrix
+## 7. Traceability Matrix (Detailed)
 
-| Artefak   | Referensi        | Implementasi                   | Bukti                |
-| --------- | ---------------- | ------------------------------ | -------------------- |
-| FR-1      | Manajemen Produk | ProductController/Service/DAO  | Screenshot CRUD      |
-| FR-2      | Transaksi        | CartService/TransactionService | Screenshot keranjang |
-| FR-3      | Pembayaran       | PaymentMethod (Strategy)       | Screenshot pilihan   |
-| FR-4      | Struk & Laporan  | ReceiptService/ReportService   | Screenshot laporan   |
-| FR-5      | Login & Role     | AuthService                    | Screenshot login     |
-| Sequence  | SD-Checkout      | View→Controller→Service→DAO    | Diagram              |
-| Test Case | TC-07            | Checkout Tunai                 | Screenshot           |
+| FR ID | Fitur | Dokumen | Implementasi | Test Case |
+|-------|-------|---------|--------------|----------|
+| FR-1 | Manajemen Produk | docs/01_srs.md, docs/03_database.md | `ProductService`, `JdbcProductDAO`, `view/PosView` | TC-3, TC-4 |
+| FR-2 | Transaksi Penjualan | docs/01_srs.md | `CartService`, `Transaction`, `JdbcTransactionDAO` | TC-5, TC-6, TC-7 |
+| FR-3 | Metode Pembayaran | docs/01_srs.md | `PaymentMethod` interface, `CashPayment`, `EWalletPayment` | TC-6, TC-7 |
+| FR-4 | Struk & Laporan | docs/01_srs.md | `ReceiptService` | TC-6, TC-7, report generation |
+| FR-5 | Login & Hak Akses | docs/01_srs.md | `AuthService`, `UserDAO` | TC-1, TC-2 |
 
 ---
 
-## 8. Pembagian Kerja & Kontribusi
+## 8. Kontribusi & Bukti
 
-* Anggota 1: Integrasi sistem & arsitektur
-* Anggota 2: Service & DAO
-* Anggota 3: UI JavaFX
-* Anggota 4: Testing & dokumentasi
-
-Bukti kontribusi terdapat pada commit Git masing-masing anggota.
+- Detail kontribusi tiap anggota: lihat [docs/08_contribution.md](docs/08_contribution.md)
+- Bukti unit test: `target/surefire-reports/com.upb.agripos.CartServiceTest.txt`
+- Commit/PR: tambahkan link PR/commit pada `docs/08_contribution.md` bila tersedia (disarankan untuk tiap tugas utama)
 
 ---
 
 ## 9. Kendala & Solusi
 
-1. **Masalah koneksi database** → Solusi: pengecekan konfigurasi JDBC dan environment.
-2. **Duplikasi logika di controller** → Solusi: refactor ke Service.
-3. **Pengujian sulit pada UI** → Solusi: fokus unit test pada Service.
+- Kendala: Integrasi JavaFX dengan testing otomatis — Solusi: fokus testing pada service/logic (unit test) dan lakukan manual test pada GUI.
+- Kendala: Konsistensi schema awal — Solusi: perbaiki schema (`transaction_items`) dan update DAO.
+- Kendala: Extensibility pembayaran — Solusi: Strategy Pattern pada `payment` package.
 
 ---
 
-## 10. Kesimpulan
+## Lampiran & Instruksi Perlu Tindak Lanjut
 
-Proyek Agri-POS berhasil diimplementasikan secara terintegrasi dengan arsitektur berlapis. Sistem memenuhi seluruh kebutuhan fungsional utama, mudah dikembangkan, serta terdokumentasi dengan baik sesuai ketentuan Bab 15.
+- File DDL lengkap: [sql/schema.sql](sql/schema.sql)
+- Unit test report: [target/surefire-reports/com.upb.agripos.CartServiceTest.txt](target/surefire-reports/com.upb.agripos.CartServiceTest.txt)
+
+---
+
 
 
